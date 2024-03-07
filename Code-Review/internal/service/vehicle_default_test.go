@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-//VehicleMap is a map of vehicles
+// VehicleMap is a map of vehicles
 var VehicleMap = map[int]internal.Vehicle{
 	1: {
 		Id: 1,
@@ -32,8 +32,9 @@ var VehicleMap = map[int]internal.Vehicle{
 		},
 	},
 }
+
 func TestServiceVehicleDefault_FindByColorAndYear(t *testing.T) {
-	t.Run("success", func(t *testing.T) {
+	t.Run("success, vehicles found", func(t *testing.T) {
 		// arrange
 		rp := repository.NewRepositoryMock()
 		rp.On("FindByColorAndYear", "red", 2010).Return(VehicleMap, nil)
@@ -45,6 +46,20 @@ func TestServiceVehicleDefault_FindByColorAndYear(t *testing.T) {
 		require.NoError(t, err)
 		require.Len(t, vehicles, 1)
 		rp.AssertExpectations(t)
+
+	})
+
+	t.Run("error - no vehicles", func(t *testing.T) {
+		rp := repository.NewRepositoryMock()
+		rp.On("FindByColorAndYear", "red", 2010).Return(map[int]internal.Vehicle{}, internal.ErrServiceNoVehicles)
+
+		sv := service.NewServiceVehicleDefault(rp)
+		// act
+		vehicles, err := sv.FindByColorAndYear("red", 2010)
+		// assert
+		require.Error(t, err)
+		require.Len(t, vehicles, 0)
+		require.EqualError(t, err, "service: no vehicles")
 
 	})
 }
@@ -62,6 +77,19 @@ func TestServiceVehicleDefault_FindByBrandAndYearRange(t *testing.T) {
 		require.NoError(t, err)
 		require.Len(t, vehicles, 1)
 		rp.AssertExpectations(t)
+	})
+
+	t.Run("error - no vehicles", func(t *testing.T) {
+		rp := repository.NewRepositoryMock()
+		rp.On("FindByBrandAndYearRange", "Ford", 2010, 2015).Return(map[int]internal.Vehicle{}, internal.ErrServiceNoVehicles)
+
+		sv := service.NewServiceVehicleDefault(rp)
+		// act
+		vehicles, err := sv.FindByBrandAndYearRange("Ford", 2010, 2015)
+		// assert
+		require.Error(t, err)
+		require.Len(t, vehicles, 0)
+		require.EqualError(t, err, "service: no vehicles")
 	})
 }
 
@@ -82,7 +110,7 @@ func TestServiceVehicleDefault_AverageMaxSpeedByBrand(t *testing.T) {
 
 	t.Run("error - no vehicles", func(t *testing.T) {
 		rp := repository.NewRepositoryMock()
-		rp.On("FindByBrand", "Ford").Return(map[int]internal.Vehicle{}, nil)
+		rp.On("FindByBrand", "Ford").Return(map[int]internal.Vehicle{}, internal.ErrServiceNoVehicles)
 
 		sv := service.NewServiceVehicleDefault(rp)
 		// act
@@ -113,7 +141,7 @@ func TestServiceVehicleDefault_AverageCapacityByBrand(t *testing.T) {
 
 	t.Run("error - no vehicles", func(t *testing.T) {
 		rp := repository.NewRepositoryMock()
-		rp.On("FindByBrand", "Ford").Return(map[int]internal.Vehicle{}, nil)
+		rp.On("FindByBrand", "Ford").Return(map[int]internal.Vehicle{}, internal.ErrServiceNoVehicles)
 
 		sv := service.NewServiceVehicleDefault(rp)
 		// act
@@ -155,6 +183,24 @@ func TestServiceVehicleDefault_SearchByWeightRange(t *testing.T) {
 		// assert
 		require.NoError(t, err)
 		require.Len(t, vehicles, 1)
+		rp.AssertExpectations(t)
+
+	})
+
+	t.Run("case - error - no vehicles", func(t *testing.T) {
+		rp := repository.NewRepositoryMock()
+		rp.On("FindByWeightRange", 1000.0, 2000.0).Return(map[int]internal.Vehicle{}, internal.ErrServiceNoVehicles)
+
+		sv := service.NewServiceVehicleDefault(rp)
+		// act
+		vehicles, err := sv.SearchByWeightRange(internal.SearchQuery{
+			FromWeight: 1000.0,
+			ToWeight:   2000.0,
+		}, true)
+		// assert
+		require.Error(t, err)
+		require.Len(t, vehicles, 0)
+		require.EqualError(t, err, "service: no vehicles")
 		rp.AssertExpectations(t)
 
 	})
