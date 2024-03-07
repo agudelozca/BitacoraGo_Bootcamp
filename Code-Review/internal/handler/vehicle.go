@@ -31,11 +31,23 @@ func (h *HandlerVehicle) FindByColorAndYear() http.HandlerFunc {
 			response.Error(w, http.StatusBadRequest, "invalid year")
 			return
 		}
-
-		// process
+		/*
+			// process
+			v, err := h.sv.FindByColorAndYear(color, year)
+			if err != nil {
+				response.Error(w, http.StatusInternalServerError, "internal error")
+				return
+			}
+		*/
+		// refactor process for best control error
 		v, err := h.sv.FindByColorAndYear(color, year)
 		if err != nil {
-			response.Error(w, http.StatusInternalServerError, "internal error")
+			switch {
+			case errors.Is(err, internal.ErrServiceNoVehicles):
+				response.Error(w, http.StatusNotFound, "vehicles not found")
+			default:
+				response.Error(w, http.StatusInternalServerError, "internal error")
+			}
 			return
 		}
 
@@ -66,7 +78,12 @@ func (h *HandlerVehicle) FindByBrandAndYearRange() http.HandlerFunc {
 		// process
 		v, err := h.sv.FindByBrandAndYearRange(brand, startYear, endYear)
 		if err != nil {
-			response.Error(w, http.StatusInternalServerError, "internal error")
+			switch {
+			case errors.Is(err, internal.ErrServiceNoVehicles):
+				response.Error(w, http.StatusNotFound, "vehicles not found")
+			default:
+				response.Error(w, http.StatusInternalServerError, "internal error")
+			}
 			return
 		}
 
@@ -156,7 +173,12 @@ func (h *HandlerVehicle) SearchByWeightRange() http.HandlerFunc {
 		// process
 		v, err := h.sv.SearchByWeightRange(query, ok)
 		if err != nil {
-			response.Error(w, http.StatusInternalServerError, "internal error")
+			switch {
+			case errors.Is(err, internal.ErrServiceNoVehicles):
+				response.Error(w, http.StatusNotFound, "vehicles not found")
+			default:
+				response.Error(w, http.StatusInternalServerError, "internal error")
+			}
 			return
 		}
 

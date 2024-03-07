@@ -107,6 +107,35 @@ func TestHandlerVehicle_FindByColorAndYear(t *testing.T) {
 		require.JSONEq(t, expectBody, w.Body.String())
 
 	})
+
+	t.Run("case error, vehicle not found", func(t *testing.T) {
+		// arrange
+		s := service.NewServiceVehicleDefaultMock()
+		hd := handler.NewHandlerVehicle(s)
+		h := hd.FindByColorAndYear()
+		s.On("FindByColorAndYear", "redd", 20100).Return(map[int]internal.Vehicle{}, internal.ErrServiceNoVehicles)
+
+		//request
+		r := httptest.NewRequest(http.MethodGet, "/vehicles/color/", nil)
+		r.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		ctx := chi.NewRouteContext()
+		ctx.URLParams.Add("color", "redd")
+		ctx.URLParams.Add("year", "20100")
+		r = r.WithContext(context.WithValue(r.Context(), chi.RouteCtxKey, ctx))
+		// act
+		h(w, r)
+		// assert
+		require.Equal(t, http.StatusNotFound, w.Code)
+		expectBody := `{
+			"status": "Not Found",
+			"message": "vehicles not found"
+		}`
+		require.JSONEq(t, expectBody, w.Body.String())
+		s.AssertExpectations(t)
+		s.AssertNumberOfCalls(t, "FindByColorAndYear", 1)
+
+	})
 }
 
 func TestHandlerVehicle_FindByBrandAndYearRange(t *testing.T) {
@@ -140,6 +169,7 @@ func TestHandlerVehicle_FindByBrandAndYearRange(t *testing.T) {
 
 		//request
 		r := httptest.NewRequest(http.MethodGet, "/vehicles/brand/", nil)
+		r.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()
 		ctx := chi.NewRouteContext()
 		ctx.URLParams.Add("brand", "Ford")
@@ -184,6 +214,7 @@ func TestHandlerVehicle_FindByBrandAndYearRange(t *testing.T) {
 
 		//request
 		r := httptest.NewRequest(http.MethodGet, "/vehicles/brand/", nil)
+		r.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()
 		ctx := chi.NewRouteContext()
 		ctx.URLParams.Add("brand", "Ford")
@@ -210,6 +241,7 @@ func TestHandlerVehicle_FindByBrandAndYearRange(t *testing.T) {
 
 		//request
 		r := httptest.NewRequest(http.MethodGet, "/vehicles/brand/", nil)
+		r.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()
 		ctx := chi.NewRouteContext()
 		ctx.URLParams.Add("brand", "Ford")
@@ -227,6 +259,35 @@ func TestHandlerVehicle_FindByBrandAndYearRange(t *testing.T) {
 		require.JSONEq(t, expectBody, w.Body.String())
 	})
 
+	t.Run("case - error vehicles not found", func(t *testing.T) {
+		// arrange
+		s := service.NewServiceVehicleDefaultMock()
+		hd := handler.NewHandlerVehicle(s)
+		h := hd.FindByBrandAndYearRange()
+		s.On("FindByBrandAndYearRange", "Ford", 2010, 2015).Return(map[int]internal.Vehicle{}, internal.ErrServiceNoVehicles)
+
+		//request
+		r := httptest.NewRequest(http.MethodGet, "/vehicles/brand/", nil)
+		r.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		ctx := chi.NewRouteContext()
+		ctx.URLParams.Add("brand", "Ford")
+		ctx.URLParams.Add("start_year", "2010")
+		ctx.URLParams.Add("end_year", "2015")
+		r = r.WithContext(context.WithValue(r.Context(), chi.RouteCtxKey, ctx))
+		// act
+		h(w, r)
+		// assert
+		require.Equal(t, http.StatusNotFound, w.Code)
+		expectBody := `{
+			"status": "Not Found",
+			"message": "vehicles not found"
+		}`
+		require.JSONEq(t, expectBody, w.Body.String())
+		s.AssertExpectations(t)
+		s.AssertNumberOfCalls(t, "FindByBrandAndYearRange", 1)
+	})
+
 }
 
 func Test_handler_AverageMaxSpeedByBrand(t *testing.T) {
@@ -239,6 +300,7 @@ func Test_handler_AverageMaxSpeedByBrand(t *testing.T) {
 
 		//request
 		r := httptest.NewRequest(http.MethodGet, "/vehicles/average_speed/brand/", nil)
+		r.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()
 		ctx := chi.NewRouteContext()
 		ctx.URLParams.Add("brand", "Ford")
@@ -265,6 +327,7 @@ func Test_handler_AverageMaxSpeedByBrand(t *testing.T) {
 
 		//request
 		r := httptest.NewRequest(http.MethodGet, "/vehicles/average_speed/brand/", nil)
+		r.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()
 		ctx := chi.NewRouteContext()
 		ctx.URLParams.Add("brand", "Ford")
@@ -293,6 +356,7 @@ func Test_handler_AverageCapacityByBrand(t *testing.T) {
 
 		//request
 		r := httptest.NewRequest(http.MethodGet, "/vehicles/average_capacity/brand/", nil)
+		r.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()
 		ctx := chi.NewRouteContext()
 		ctx.URLParams.Add("brand", "Ford")
@@ -319,6 +383,7 @@ func Test_handler_AverageCapacityByBrand(t *testing.T) {
 
 		//request
 		r := httptest.NewRequest(http.MethodGet, "/vehicles/average_capacity/brand/", nil)
+		r.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()
 		ctx := chi.NewRouteContext()
 		ctx.URLParams.Add("brand", "Ford")
@@ -369,6 +434,7 @@ func Test_handler_SearchByWeightRange(t *testing.T) {
 
 		//request
 		r := httptest.NewRequest(http.MethodGet, "/vehicles/weight/", nil)
+		r.Header.Set("Content-Type", "application/json")
 		query := r.URL.Query()
 		query.Add("weight_min", "1000")
 		query.Add("weight_max", "2000")
@@ -415,6 +481,7 @@ func Test_handler_SearchByWeightRange(t *testing.T) {
 
 		//request
 		r := httptest.NewRequest(http.MethodGet, "/vehicles/weight/", nil)
+		r.Header.Set("Content-Type", "application/json")
 		query := r.URL.Query()
 		query.Add("weight_min", "abc")
 		query.Add("weight_max", "2000")
@@ -442,6 +509,7 @@ func Test_handler_SearchByWeightRange(t *testing.T) {
 
 		//request
 		r := httptest.NewRequest(http.MethodGet, "/vehicles/weight/", nil)
+		r.Header.Set("Content-Type", "application/json")
 		query := r.URL.Query()
 		query.Add("weight_min", "1000")
 		query.Add("weight_max", "abc")
@@ -457,6 +525,36 @@ func Test_handler_SearchByWeightRange(t *testing.T) {
 		}`
 		require.JSONEq(t, expectBody, w.Body.String())
 
+	})
+
+	t.Run("case error - vehicles not found", func(t *testing.T) {
+		// arrange
+		s := service.NewServiceVehicleDefaultMock()
+		hd := handler.NewHandlerVehicle(s)
+		h := hd.SearchByWeightRange()
+		s.On("SearchByWeightRange", mock.AnythingOfType("internal.SearchQuery"), mock.AnythingOfType("bool")).Return(
+			map[int]internal.Vehicle{}, internal.ErrServiceNoVehicles)
+
+		//request
+		r := httptest.NewRequest(http.MethodGet, "/vehicles/weight/", nil)
+		r.Header.Set("Content-Type", "application/json")
+		query := r.URL.Query()
+		query.Add("weight_min", "1000")
+		query.Add("weight_max", "2000")
+		r.URL.RawQuery = query.Encode()
+		w := httptest.NewRecorder()
+		// act
+		h(w, r)
+		// assert
+		require.Equal(t, http.StatusNotFound, w.Code)
+		expectBody := `{
+			"status": "Not Found",
+			"message": "vehicles not found"
+		}`
+		require.JSONEq(t, expectBody, w.Body.String())
+
+		s.AssertExpectations(t)
+		s.AssertNumberOfCalls(t, "SearchByWeightRange", 1)
 	})
 
 }

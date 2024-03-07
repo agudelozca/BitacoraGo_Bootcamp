@@ -16,12 +16,28 @@ func NewServiceVehicleDefault(rp internal.RepositoryReadVehicle) *ServiceVehicle
 // FindByColorAndYear is a method that returns a map of vehicles that match the color and fabrication year
 func (s *ServiceVehicleDefault) FindByColorAndYear(color string, fabricationYear int) (v map[int]internal.Vehicle, err error) {
 	v, err = s.rp.FindByColorAndYear(color, fabricationYear)
+	//code added for better control error
+	if err != nil {
+		return
+	}
+	if len(v) == 0 {
+		err = internal.ErrServiceNoVehicles
+		return
+	}
 	return
 }
 
 // FindByBrandAndYearRange is a method that returns a map of vehicles that match the brand and a range of fabrication years
 func (s *ServiceVehicleDefault) FindByBrandAndYearRange(brand string, startYear int, endYear int) (v map[int]internal.Vehicle, err error) {
 	v, err = s.rp.FindByBrandAndYearRange(brand, startYear, endYear)
+	//code added for better control error
+	if err != nil {
+		return
+	}
+	if len(v) == 0 {
+		err = internal.ErrServiceNoVehicles
+		return
+	}
 	return
 }
 
@@ -47,7 +63,7 @@ func (s *ServiceVehicleDefault) AverageMaxSpeedByBrand(brand string) (a float64,
 	a = totalSpeed / float64(len(v))
 	return
 }
-		
+
 // AverageCapacityByBrand is a method that returns the average capacity of the vehicles by brand
 func (s *ServiceVehicleDefault) AverageCapacityByBrand(brand string) (a int, err error) {
 	// get vehicles by brand
@@ -55,7 +71,7 @@ func (s *ServiceVehicleDefault) AverageCapacityByBrand(brand string) (a int, err
 	if err != nil {
 		return
 	}
-	
+
 	// check if there are vehicles
 	if len(v) == 0 {
 		err = internal.ErrServiceNoVehicles
@@ -80,6 +96,12 @@ func (s *ServiceVehicleDefault) SearchByWeightRange(query internal.SearchQuery, 
 	}
 
 	v, err = s.rp.FindByWeightRange(query.FromWeight, query.ToWeight)
+	if err != nil {
+		return
+	}
+	if len(v) == 0 {
+		err = internal.ErrServiceNoVehicles
+		return
+	}
 	return
 }
-	
