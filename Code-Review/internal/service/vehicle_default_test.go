@@ -80,6 +80,7 @@ func TestServiceVehicleDefault_FindByBrandAndYearRange(t *testing.T) {
 	})
 
 	t.Run("error - no vehicles", func(t *testing.T) {
+		//arrange
 		rp := repository.NewRepositoryMock()
 		rp.On("FindByBrandAndYearRange", "Ford", 2010, 2015).Return(map[int]internal.Vehicle{}, nil)
 
@@ -95,6 +96,7 @@ func TestServiceVehicleDefault_FindByBrandAndYearRange(t *testing.T) {
 
 func TestServiceVehicleDefault_AverageMaxSpeedByBrand(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
+		//arrange
 		rp := repository.NewRepositoryMock()
 		rp.On("FindByBrand", "Ford").Return(VehicleMap, nil)
 
@@ -109,6 +111,7 @@ func TestServiceVehicleDefault_AverageMaxSpeedByBrand(t *testing.T) {
 	})
 
 	t.Run("error - no vehicles", func(t *testing.T) {
+		//arrange
 		rp := repository.NewRepositoryMock()
 		rp.On("FindByBrand", "Ford").Return(map[int]internal.Vehicle{}, nil)
 
@@ -126,6 +129,7 @@ func TestServiceVehicleDefault_AverageMaxSpeedByBrand(t *testing.T) {
 
 func TestServiceVehicleDefault_AverageCapacityByBrand(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
+		//arrange
 		rp := repository.NewRepositoryMock()
 		rp.On("FindByBrand", "Ford").Return(VehicleMap, nil)
 
@@ -140,6 +144,7 @@ func TestServiceVehicleDefault_AverageCapacityByBrand(t *testing.T) {
 	})
 
 	t.Run("error - no vehicles", func(t *testing.T) {
+		//arrange
 		rp := repository.NewRepositoryMock()
 		rp.On("FindByBrand", "Ford").Return(map[int]internal.Vehicle{}, nil)
 
@@ -157,6 +162,7 @@ func TestServiceVehicleDefault_AverageCapacityByBrand(t *testing.T) {
 
 func TestServiceVehicleDefault_SearchByWeightRange(t *testing.T) {
 	t.Run("case - query !ok then find all", func(t *testing.T) {
+		//arrange
 		rp := repository.NewRepositoryMock()
 		rp.On("FindAll").Return(VehicleMap, nil)
 
@@ -171,6 +177,7 @@ func TestServiceVehicleDefault_SearchByWeightRange(t *testing.T) {
 	})
 
 	t.Run("case - query ok then find by weight range", func(t *testing.T) {
+		//arrange
 		rp := repository.NewRepositoryMock()
 		rp.On("FindByWeightRange", 1000.0, 2000.0).Return(VehicleMap, nil)
 
@@ -188,6 +195,7 @@ func TestServiceVehicleDefault_SearchByWeightRange(t *testing.T) {
 	})
 
 	t.Run("case - error - no vehicles", func(t *testing.T) {
+		//arrange
 		rp := repository.NewRepositoryMock()
 		rp.On("FindByWeightRange", 1000.0, 2000.0).Return(map[int]internal.Vehicle{}, nil)
 

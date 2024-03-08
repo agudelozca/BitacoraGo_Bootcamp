@@ -14,37 +14,62 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var VehicleMap = map[int]internal.Vehicle{
+	1: {
+		Id: 1,
+		VehicleAttributes: internal.VehicleAttributes{
+			Brand:           "Ford",
+			Model:           "Fiesta",
+			Registration:    "ABC-123",
+			Color:           "red",
+			FabricationYear: 2010,
+			Capacity:        5,
+			MaxSpeed:        180,
+			FuelType:        "gasoline",
+			Transmission:    "manual",
+			Weight:          1000,
+			Dimensions: internal.Dimensions{
+				Height: 1.5,
+				Length: 4,
+				Width:  1.8,
+			},
+		},
+	},
+}
+
+var ExpectBody = `{
+	"message": "vehicles found",
+	"data": {
+		"1": {
+			"Id": 1,
+			"Brand": "Ford",
+			"Model": "Fiesta",
+			"Registration": "ABC-123",
+			"Color": "red",
+			"FabricationYear": 2010,
+			"Capacity": 5,
+			"MaxSpeed": 180,
+			"FuelType": "gasoline",
+			"Transmission": "manual",
+			"Weight": 1000,
+			"Height": 1.5,
+			"Length": 4,
+			"Width": 1.8
+		}
+	}
+}`
+
 func TestHandlerVehicle_FindByColorAndYear(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// arrange
 		s := service.NewServiceVehicleDefaultMock()
 		hd := handler.NewHandlerVehicle(s)
 		h := hd.FindByColorAndYear()
-		s.On("FindByColorAndYear", "red", 2010).Return(map[int]internal.Vehicle{
-			1: {
-				Id: 1,
-				VehicleAttributes: internal.VehicleAttributes{
-					Brand:           "Ford",
-					Model:           "Fiesta",
-					Registration:    "ABC-123",
-					Color:           "red",
-					FabricationYear: 2010,
-					Capacity:        5,
-					MaxSpeed:        180,
-					FuelType:        "gasoline",
-					Transmission:    "manual",
-					Weight:          1000,
-					Dimensions: internal.Dimensions{
-						Height: 1.5,
-						Length: 4,
-						Width:  1.8,
-					},
-				},
-			},
-		}, nil)
+		s.On("FindByColorAndYear", "red", 2010).Return(VehicleMap, nil)
 
 		//request
 		r := httptest.NewRequest(http.MethodGet, "/vehicles/color/", nil)
+		r.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()
 		ctx := chi.NewRouteContext()
 		ctx.URLParams.Add("color", "red")
@@ -54,29 +79,7 @@ func TestHandlerVehicle_FindByColorAndYear(t *testing.T) {
 		h(w, r)
 		// assert
 		require.Equal(t, http.StatusOK, w.Code)
-		expectBody := `{
-			"message": "vehicles found",
-			"data": {
-				"1": {
-					"Id": 1,
-					"Brand": "Ford",
-					"Model": "Fiesta",
-					"Registration": "ABC-123",
-					"Color": "red",
-					"FabricationYear": 2010,
-					"Capacity": 5,
-					"MaxSpeed": 180,
-					"FuelType": "gasoline",
-					"Transmission": "manual",
-					"Weight": 1000,
-					"Height": 1.5,
-					"Length": 4,
-					"Width": 1.8
-				}
-			}
-		}`
-
-		require.JSONEq(t, expectBody, w.Body.String())
+		require.JSONEq(t, ExpectBody, w.Body.String())
 		s.AssertExpectations(t)
 		s.AssertNumberOfCalls(t, "FindByColorAndYear", 1)
 	})
@@ -90,6 +93,7 @@ func TestHandlerVehicle_FindByColorAndYear(t *testing.T) {
 
 		//request
 		r := httptest.NewRequest(http.MethodGet, "/vehicles/color/", nil)
+		r.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()
 		ctx := chi.NewRouteContext()
 		ctx.URLParams.Add("color", "red")
@@ -144,28 +148,7 @@ func TestHandlerVehicle_FindByBrandAndYearRange(t *testing.T) {
 		s := service.NewServiceVehicleDefaultMock()
 		hd := handler.NewHandlerVehicle(s)
 		h := hd.FindByBrandAndYearRange()
-		s.On("FindByBrandAndYearRange", "Ford", 2010, 2015).Return(map[int]internal.Vehicle{
-			1: {
-				Id: 1,
-				VehicleAttributes: internal.VehicleAttributes{
-					Brand:           "Ford",
-					Model:           "Fiesta",
-					Registration:    "ABC-123",
-					Color:           "red",
-					FabricationYear: 2010,
-					Capacity:        5,
-					MaxSpeed:        180,
-					FuelType:        "gasoline",
-					Transmission:    "manual",
-					Weight:          1000,
-					Dimensions: internal.Dimensions{
-						Height: 1.5,
-						Length: 4,
-						Width:  1.8,
-					},
-				},
-			},
-		}, nil)
+		s.On("FindByBrandAndYearRange", "Ford", 2010, 2015).Return(VehicleMap, nil)
 
 		//request
 		r := httptest.NewRequest(http.MethodGet, "/vehicles/brand/", nil)
@@ -180,28 +163,7 @@ func TestHandlerVehicle_FindByBrandAndYearRange(t *testing.T) {
 		h(w, r)
 		// assert
 		require.Equal(t, http.StatusOK, w.Code)
-		expectBody := `{
-			"message": "vehicles found",
-			"data": {
-				"1": {
-					"Id": 1,
-					"Brand": "Ford",
-					"Model": "Fiesta",
-					"Registration": "ABC-123",
-					"Color": "red",
-					"FabricationYear": 2010,
-					"Capacity": 5,
-					"MaxSpeed": 180,
-					"FuelType": "gasoline",
-					"Transmission": "manual",
-					"Weight": 1000,
-					"Height": 1.5,
-					"Length": 4,
-					"Width": 1.8
-				}
-			}
-		}`
-		require.JSONEq(t, expectBody, w.Body.String())
+		require.JSONEq(t, ExpectBody, w.Body.String())
 		s.AssertExpectations(t)
 		s.AssertNumberOfCalls(t, "FindByBrandAndYearRange", 1)
 	})
@@ -408,29 +370,7 @@ func Test_handler_SearchByWeightRange(t *testing.T) {
 		s := service.NewServiceVehicleDefaultMock()
 		hd := handler.NewHandlerVehicle(s)
 		h := hd.SearchByWeightRange()
-		s.On("SearchByWeightRange", mock.AnythingOfType("internal.SearchQuery"), mock.AnythingOfType("bool")).Return(
-			map[int]internal.Vehicle{
-				1: {
-					Id: 1,
-					VehicleAttributes: internal.VehicleAttributes{
-						Brand:           "Ford",
-						Model:           "Fiesta",
-						Registration:    "ABC-123",
-						Color:           "red",
-						FabricationYear: 2010,
-						Capacity:        5,
-						MaxSpeed:        180,
-						FuelType:        "gasoline",
-						Transmission:    "manual",
-						Weight:          1000,
-						Dimensions: internal.Dimensions{
-							Height: 1.5,
-							Length: 4,
-							Width:  1.8,
-						},
-					},
-				},
-			}, nil)
+		s.On("SearchByWeightRange", mock.AnythingOfType("internal.SearchQuery"), mock.AnythingOfType("bool")).Return(VehicleMap, nil)
 
 		//request
 		r := httptest.NewRequest(http.MethodGet, "/vehicles/weight/", nil)
@@ -444,29 +384,7 @@ func Test_handler_SearchByWeightRange(t *testing.T) {
 		h(w, r)
 		// assert
 		require.Equal(t, http.StatusOK, w.Code)
-		expectBody := `{
-			"message": "vehicles found",
-			"data": {
-				"1": {
-					"Id": 1,
-					"Brand": "Ford",
-					"Model": "Fiesta",
-					"Registration": "ABC-123",
-					"Color": "red",
-					"FabricationYear": 2010,
-					"Capacity": 5,
-					"MaxSpeed": 180,
-					"FuelType": "gasoline",
-					"Transmission": "manual",
-					"Weight": 1000,
-					"Height": 1.5,
-					"Length": 4,
-					"Width": 1.8
-				}
-			}
-		}`
-		require.JSONEq(t, expectBody, w.Body.String())
-
+		require.JSONEq(t, ExpectBody, w.Body.String())
 		s.AssertExpectations(t)
 		s.AssertNumberOfCalls(t, "SearchByWeightRange", 1)
 	})
